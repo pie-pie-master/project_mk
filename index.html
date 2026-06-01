@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lembrete de Medicamentos</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            background: #3498db;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .medicamento {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .tomado {
+            background: #d4edda;
+        }
+
+        .historico {
+            margin-top: 10px;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+
+        .small {
+            color: gray;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>💊 Lembrete de Medicamentos</h1>
+
+        <div class="card">
+            <h2>Cadastrar Medicamento</h2>
+
+            <input type="text" id="nome" placeholder="Nome do medicamento">
+
+            <input type="time" id="horario">
+
+            <button onclick="adicionarMedicamento()">
+                Adicionar
+            </button>
+        </div>
+
+        <div class="card">
+            <h2>Medicamentos</h2>
+
+            <div id="listaMedicamentos"></div>
+        </div>
+
+        <div class="card">
+            <h2>Histórico de Hoje</h2>
+
+            <div id="historico"></div>
+        </div>
+
+    </div>
+
+    <script>
+
+        let medicamentos =
+            JSON.parse(localStorage.getItem("medicamentos")) || [];
+
+        let historico =
+            JSON.parse(localStorage.getItem("historico")) || [];
+
+        function salvar() {
+            localStorage.setItem(
+                "medicamentos",
+                JSON.stringify(medicamentos)
+            );
+
+            localStorage.setItem(
+                "historico",
+                JSON.stringify(historico)
+            );
+        }
+
+        function adicionarMedicamento() {
+
+            const nome =
+                document.getElementById("nome").value;
+
+            const horario =
+                document.getElementById("horario").value;
+
+            if (!nome || !horario) {
+                alert("Preencha todos os campos.");
+                return;
+            }
+
+            medicamentos.push({
+                id: Date.now(),
+                nome,
+                horario
+            });
+
+            salvar();
+
+            document.getElementById("nome").value = "";
+            document.getElementById("horario").value = "";
+
+            renderizar();
+        }
+
+        function marcarTomado(id) {
+
+            const med =
+                medicamentos.find(m => m.id === id);
+
+            const agora =
+                new Date().toLocaleTimeString("pt-BR");
+
+            historico.push({
+                nome: med.nome,
+                horarioProgramado: med.horario,
+                horarioTomado: agora,
+                data: new Date().toLocaleDateString("pt-BR")
+            });
+
+            salvar();
+            renderizarHistorico();
+
+            alert("Medicamento marcado como tomado!");
+        }
+
+        function excluirMedicamento(id) {
+
+            medicamentos =
+                medicamentos.filter(m => m.id !== id);
+
+            salvar();
+            renderizar();
+        }
+
+        function renderizar() {
+
+            const lista =
+                document.getElementById("listaMedicamentos");
+
+            lista.innerHTML = "";
+
+            medicamentos.forEach(med => {
+
+                lista.innerHTML += `
+        <div class="medicamento">
+            <h3>${med.nome}</h3>
+
+            <p>
+            Horário: <strong>${med.horario}</strong>
+            </p>
+
+            <button
+            onclick="marcarTomado(${med.id})">
+            ✔ Marcar como tomado
+            </button>
+
+            <button
+            style="background:#e74c3c"
+            onclick="excluirMedicamento(${med.id})">
+            Excluir
+            </button>
+        </div>
+        `;
+            });
+        }
+
+        function renderizarHistorico() {
+
+            const div =
+                document.getElementById("historico");
+
+            div.innerHTML = "";
+
+            const hoje =
+                new Date().toLocaleDateString("pt-BR");
+
+            const registros =
+                historico.filter(item => item.data === hoje);
+
+            if (registros.length === 0) {
+                div.innerHTML =
+                    "<p>Nenhum medicamento tomado hoje.</p>";
+                return;
+            }
+
+            registros.forEach(item => {
+
+                div.innerHTML += `
+        <div class="historico">
+            <strong>${item.nome}</strong><br>
+
+            Horário programado:
+            ${item.horarioProgramado}<br>
+
+            Tomado às:
+            ${item.horarioTomado}
+        </div>
+        `;
+            });
+        }
+
+        renderizar();
+        renderizarHistorico();
+
+    </script>
+
+</body>
+
+</html>
