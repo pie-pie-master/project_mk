@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lembrete de Medicamentos</title>
-
     <style>
         * {
             margin: 0;
@@ -22,6 +20,11 @@
         .container {
             max-width: 800px;
             margin: auto;
+        }
+
+        /* Classe para esconder elementos */
+        .oculto {
+            display: none;
         }
 
         h1 {
@@ -54,6 +57,8 @@
             color: white;
             border-radius: 5px;
             cursor: pointer;
+            width: 100%; /* Botões ocupando a largura total */
+            font-size: 16px;
         }
 
         button:hover {
@@ -82,68 +87,95 @@
             color: gray;
             font-size: 14px;
         }
+        
+        .btn-logout {
+            background: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        .btn-logout:hover {
+            background: #c0392b;
+        }
     </style>
 </head>
-
 <body>
 
-    <div class="container">
+    <div class="container" id="tela-login">
+        <h1>🔐 Acesso ao Sistema</h1>
+        <div class="card">
+            <h2>Entrar com Gmail</h2>
+            <input type="email" id="emailLogin" placeholder="Seu e-mail (@gmail.com)">
+            <input type="password" id="senhaLogin" placeholder="Sua senha">
+            
+            <button onclick="fazerLogin()">Entrar</button>
+        </div>
+    </div>
+
+    <div class="container oculto" id="tela-app">
+        
+        <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
 
         <h1>💊 Lembrete de Medicamentos</h1>
 
         <div class="card">
             <h2>Cadastrar Medicamento</h2>
-
             <input type="text" id="nome" placeholder="Nome do medicamento">
-
             <input type="time" id="horario">
-
-            <button onclick="adicionarMedicamento()">
-                Adicionar
-            </button>
+            <button onclick="adicionarMedicamento()">Adicionar</button>
         </div>
 
         <div class="card">
             <h2>Medicamentos</h2>
-
             <div id="listaMedicamentos"></div>
         </div>
 
         <div class="card">
             <h2>Histórico de Hoje</h2>
-
             <div id="historico"></div>
         </div>
 
     </div>
 
     <script>
+        // --- LÓGICA DE LOGIN ---
+        function fazerLogin() {
+            const email = document.getElementById("emailLogin").value;
+            const senha = document.getElementById("senhaLogin").value;
 
-        let medicamentos =
-            JSON.parse(localStorage.getItem("medicamentos")) || [];
+            if (!email.includes("@gmail.com")) {
+                alert("Por favor, use um e-mail do Gmail válido.");
+                return;
+            }
 
-        let historico =
-            JSON.parse(localStorage.getItem("historico")) || [];
+            if (!senha) {
+                alert("A senha é obrigatória.");
+                return;
+            }
+
+            // Simulação de login com sucesso
+            document.getElementById("tela-login").classList.add("oculto");
+            document.getElementById("tela-app").classList.remove("oculto");
+        }
+
+        function fazerLogout() {
+            document.getElementById("tela-login").classList.remove("oculto");
+            document.getElementById("tela-app").classList.add("oculto");
+            document.getElementById("emailLogin").value = "";
+            document.getElementById("senhaLogin").value = "";
+        }
+
+        // --- LÓGICA DO SEU APP DE MEDICAMENTOS ---
+        let medicamentos = JSON.parse(localStorage.getItem("medicamentos")) || [];
+        let historico = JSON.parse(localStorage.getItem("historico")) || [];
 
         function salvar() {
-            localStorage.setItem(
-                "medicamentos",
-                JSON.stringify(medicamentos)
-            );
-
-            localStorage.setItem(
-                "historico",
-                JSON.stringify(historico)
-            );
+            localStorage.setItem("medicamentos", JSON.stringify(medicamentos));
+            localStorage.setItem("historico", JSON.stringify(historico));
         }
 
         function adicionarMedicamento() {
-
-            const nome =
-                document.getElementById("nome").value;
-
-            const horario =
-                document.getElementById("horario").value;
+            const nome = document.getElementById("nome").value;
+            const horario = document.getElementById("horario").value;
 
             if (!nome || !horario) {
                 alert("Preencha todos os campos.");
@@ -157,20 +189,14 @@
             });
 
             salvar();
-
             document.getElementById("nome").value = "";
             document.getElementById("horario").value = "";
-
             renderizar();
         }
 
         function marcarTomado(id) {
-
-            const med =
-                medicamentos.find(m => m.id === id);
-
-            const agora =
-                new Date().toLocaleTimeString("pt-BR");
+            const med = medicamentos.find(m => m.id === id);
+            const agora = new Date().toLocaleTimeString("pt-BR");
 
             historico.push({
                 nome: med.nome,
@@ -181,91 +207,55 @@
 
             salvar();
             renderizarHistorico();
-
             alert("Medicamento marcado como tomado!");
         }
 
         function excluirMedicamento(id) {
-
-            medicamentos =
-                medicamentos.filter(m => m.id !== id);
-
+            medicamentos = medicamentos.filter(m => m.id !== id);
             salvar();
             renderizar();
         }
 
         function renderizar() {
-
-            const lista =
-                document.getElementById("listaMedicamentos");
-
+            const lista = document.getElementById("listaMedicamentos");
             lista.innerHTML = "";
 
             medicamentos.forEach(med => {
-
                 lista.innerHTML += `
-        <div class="medicamento">
-            <h3>${med.nome}</h3>
-
-            <p>
-            Horário: <strong>${med.horario}</strong>
-            </p>
-
-            <button
-            onclick="marcarTomado(${med.id})">
-            ✔ Marcar como tomado
-            </button>
-
-            <button
-            style="background:#e74c3c"
-            onclick="excluirMedicamento(${med.id})">
-            Excluir
-            </button>
-        </div>
-        `;
+                <div class="medicamento">
+                    <h3>${med.nome}</h3>
+                    <p>Horário: <strong>${med.horario}</strong></p>
+                    <button style="margin-right: 10px;" onclick="marcarTomado(${med.id})">✔ Marcar como tomado</button>
+                    <button style="background:#e74c3c; width: auto;" onclick="excluirMedicamento(${med.id})">Excluir</button>
+                </div>
+                `;
             });
         }
 
         function renderizarHistorico() {
-
-            const div =
-                document.getElementById("historico");
-
+            const div = document.getElementById("historico");
             div.innerHTML = "";
-
-            const hoje =
-                new Date().toLocaleDateString("pt-BR");
-
-            const registros =
-                historico.filter(item => item.data === hoje);
+            const hoje = new Date().toLocaleDateString("pt-BR");
+            const registros = historico.filter(item => item.data === hoje);
 
             if (registros.length === 0) {
-                div.innerHTML =
-                    "<p>Nenhum medicamento tomado hoje.</p>";
+                div.innerHTML = "<p>Nenhum medicamento tomado hoje.</p>";
                 return;
             }
 
             registros.forEach(item => {
-
                 div.innerHTML += `
-        <div class="historico">
-            <strong>${item.nome}</strong><br>
-
-            Horário programado:
-            ${item.horarioProgramado}<br>
-
-            Tomado às:
-            ${item.horarioTomado}
-        </div>
-        `;
+                <div class="historico">
+                    <strong>${item.nome}</strong><br>
+                    Horário programado: ${item.horarioProgramado}<br>
+                    Tomado às: ${item.horarioTomado}
+                </div>
+                `;
             });
         }
 
         renderizar();
         renderizarHistorico();
-
     </script>
-
 </body>
-
 </html>
