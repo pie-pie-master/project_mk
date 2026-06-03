@@ -139,7 +139,7 @@
         const supabaseClient = supabase.createClient('https://paewmhsqikhwprbjagmr.supabase.co', 'sb_publishable_dSBFJ5fmT3_1E3oEjcPu7Q_L7eit9cU'
         );
         const loginGoogle = document.getElementById('loginGoogle');
-        loginGoogle.addEventListener('click', fazerLogin);
+        loginGoogle.addEventListener('click', signInWithGoogle);
         // --- LÓGICA DE LOGIN ---
     async function signInWithGoogle() {
         const { error } = await supabaseClient.auth.signInWithOAuth({
