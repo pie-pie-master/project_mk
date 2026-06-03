@@ -97,6 +97,7 @@
             background: #c0392b;
         }
     </style>
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -135,25 +136,18 @@
     </div>
 
     <script>
+        const supabaseClient = supabase.createClient('https://paewmhsqikhwprbjagmr.supabase.co', 'sb_publishable_dSBFJ5fmT3_1E3oEjcPu7Q_L7eit9cU'
+        );
+        const loginGoogle = document.getElementById('loginGoogle');
+        loginGoogle.addEventListener('click', fazerLogin();
         // --- LÓGICA DE LOGIN ---
-        function fazerLogin() {
-            const email = document.getElementById("emailLogin").value;
-            const senha = document.getElementById("senhaLogin").value;
+    async function signInWithGoogle() {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google'
+        });
+        if (error) console.error("Erro ao tentar fazer login:", error.message);
 
-            if (!email.includes("@gmail.com")) {
-                alert("Por favor, use um e-mail do Gmail válido.");
-                return;
-            }
-
-            if (!senha) {
-                alert("A senha é obrigatória.");
-                return;
-            }
-
-            // Simulação de login com sucesso
-            document.getElementById("tela-login").classList.add("oculto");
-            document.getElementById("tela-app").classList.remove("oculto");
-        }
+    }
 
         function fazerLogout() {
             document.getElementById("tela-login").classList.remove("oculto");
